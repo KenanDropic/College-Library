@@ -1,0 +1,4 @@
+https://stackoverflow.com/questions/68598183/get-ids-of-many-to-many-table
+https://stackoverflow.com/questions/24042359/how-to-join-only-one-row-in-joined-table-with-postgres
+https://dba.stackexchange.com/questions/173831/convert-right-side-of-join-of-many-to-many-into-array
+https://stackoverflow.com/questions/65289771/get-all-array-agg-values-with-one-matched-value-postgres

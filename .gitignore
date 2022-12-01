@@ -1,0 +1,43 @@
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# app properties & db seeder data
+src/main/resources/application.properties
+src/main/resources/data.sql
+src/main/java/com/library/config/SetupDataLoader.java
+src/main/java/com/library/entity/CompositePKs/
+src/main/java/com/library/service/TokensPurgeService.java
+src/main/java/com.library/deleted_code.txt
+src/main/java/com.library/useful_links.txt
+
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/

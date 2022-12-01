@@ -1,0 +1,134 @@
+BookRepositoryImpl
+
+package com.library.repository;
+
+import com.library.entity.Author;
+import com.library.entity.Book;
+import com.library.utils.dto.Book.AuthorDto;
+import com.library.utils.dto.Book.BooksDto;
+import com.library.utils.dto.Book.SearchBookDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
+import org.springframework.stereotype.Repository;
+
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.*;
+import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+
+@Repository
+public class BookRepositoryImpl implements BookRepositoryCustom {
+    private final EntityManager em;
+    Logger logger = LoggerFactory.getLogger(BookRepositoryImpl.class);
+
+    public BookRepositoryImpl(EntityManager em) {
+        this.em = em;
+    }
+
+    @Transactional
+    @Override
+    public Page<BooksDto> findBooks(SearchBookDto searchParams, Pageable pageable) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Book> cq = cb.createQuery(Book.class);
+        Root<Book> bookRoot = cq.from(Book.class);
+        List<Predicate> predicates = new ArrayList<>();
+
+        Join<Author, Book> authorBookJoin = bookRoot.join("authors");
+        authorBookJoin.join("books");
+
+        //Join<Book, Author> authorsBook = bookRoot.join("authors", INNER);
+        //Join<Author,Book> authorJoin = authorsBook.join("books");
+
+        logger.info(pageable.toString());
+        logger.info(searchParams.toString());
+
+        //Path<Object> path = getPath(bookRoot,"authorFirstName");
+
+        if (!searchParams.getTitle().isEmpty()) {
+            predicates.add(cb.equal(bookRoot.get("sourceTitle"), searchParams.getTitle()));
+        }
+
+        if (!searchParams.getAuthorFirstName().isEmpty()) {
+            predicates.add(cb.equal(authorBookJoin.get("authors"),
+                    searchParams.getAuthorFirstName()));
+        }
+
+        //if (!searchParams.getAuthorLastName().isEmpty()) {
+        //    predicates.add(cb.equal(bookRoot.get("authorLastName"), searchParams.getAuthorLastName()));
+        //}
+
+        if (!searchParams.getStatus().isEmpty()) {
+            predicates.add(cb.equal(bookRoot.get("status"), searchParams.getStatus()));
+        }
+
+        cq.where(cb.and(predicates.toArray(new Predicate[0])));
+
+        // This query fetches the Books as per the Page Limit
+       // List<BooksDto> results = em.createQuery(cq)
+       //         .setFirstResult((int) pageable.getOffset())
+       //         .setMaxResults(pageable.getPageSize())
+       //         .getResultList().stream().map((book) ->
+       //                 new BooksDto(book.getBookId(), book.getSourceTitle(),
+       //                         book.getPublicationOrdinalNumber(),
+       //                         book.getAuthors().stream()
+       //                                 .map((author) ->
+       //                                         new AuthorDto(author.getAuthorFirstName() + " " + author.getAuthorLastName()))
+       //                                 .collect(Collectors.toList()),
+       //                         book.getLanguage(), book.getReleaseYear(),
+       //                         book.getIsbn(), book.getCobiss(),
+       //                         book.getStatus(), book.getInStock())).collect(Collectors.toList());
+
+        Long count = getCount(cb, predicates);
+
+        return new PageImpl<>(new ArrayList<>(),
+                PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()),
+                count);
+    }
+
+    final private <V> Path<V> getPath(Root<?> root, String attributeName) {
+        Path<V> path = null;
+        for (String part : attributeName.split("\\.")) {
+            path = (path == null) ? root.get(part) : path.get(part);
+        }
+        return path;
+    }
+
+    public Long getCount(CriteriaBuilder cb, List<Predicate> predicates) {
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<Book> rootCount = countQuery.from(Book.class);
+        countQuery
+                .select(cb.count(rootCount))
+                .where(cb.and(predicates.toArray(new Predicate[0])));
+
+        return em.createQuery(countQuery).getSingleResult();
+    }
+}
+
+----------------------------------------------------------------------------------
+
+BookRepositoryCustom
+
+package com.library.repository;
+
+import com.library.utils.dto.Book.BooksDto;
+import com.library.utils.dto.Book.SearchBookDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface BookRepositoryCustom {
+    Page<BooksDto> findBooks(SearchBookDto searchParams, Pageable pageable);
+
+}
+
