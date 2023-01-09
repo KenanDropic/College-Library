@@ -1,6 +1,6 @@
 package com.library.utils.dto.Book;
 
-import com.library.utils.annotations.BookType;
+import com.library.utils.annotations.ValidateBookType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +14,7 @@ import javax.validation.constraints.Min;
 @AllArgsConstructor
 public class UpdateMetaDto {
     @Nullable
-    @BookType
+    @ValidateBookType(type = "update")
     private String bookType;
 
     @Nullable

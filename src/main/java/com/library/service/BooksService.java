@@ -1,6 +1,7 @@
 package com.library.service;
 
 import com.library.entity.Book;
+import com.library.entity.BookMeta;
 import com.library.entity.BookWriteOff;
 import com.library.exception.exceptions.NotFoundException;
 import com.library.repository.BookMetaRepository;
@@ -11,6 +12,8 @@ import com.library.utils.dto.Book.CreateBookDto;
 import com.library.utils.dto.Book.SearchBookDto;
 import com.library.utils.dto.Book.UpdateBookDto;
 import com.library.utils.dto.Book.WriteOffDto;
+import com.library.utils.mapper.UpdateBookMapper;
+import com.library.utils.mapper.UpdateBookMetaMapper;
 import com.library.utils.payload.PaginationResponse;
 import com.library.utils.payload.ResponseMessage;
 import com.library.utils.projections.BooksView;
@@ -34,13 +37,18 @@ public class BooksService {
     private final BookRepository bookRepository;
     private final BookMetaRepository bookMetaRepository;
     private final BookWriteOffRepository bookWriteOffRepository;
+    private final UpdateBookMapper updateBookMapper;
+    private final UpdateBookMetaMapper updateBookMetaMapper;
 
-    public BooksService(BookRepository bookRepository,
-                        BookMetaRepository bookMetaRepository,
-                        BookWriteOffRepository bookWriteOffRepository) {
+    public BooksService(BookRepository bookRepository, BookMetaRepository bookMetaRepository,
+                        BookWriteOffRepository bookWriteOffRepository,
+                        UpdateBookMapper updateBookMapper,
+                        UpdateBookMetaMapper updateBookMetaMapper) {
         this.bookRepository = bookRepository;
         this.bookMetaRepository = bookMetaRepository;
         this.bookWriteOffRepository = bookWriteOffRepository;
+        this.updateBookMapper = updateBookMapper;
+        this.updateBookMetaMapper = updateBookMetaMapper;
     }
 
 
@@ -96,19 +104,26 @@ public class BooksService {
         return this.bookRepository.save(book);
     }
 
-    public ResponseEntity<ResponseMessage<ResponseBody>> update(Long bookId, UpdateBookDto updateParams) {
+    public ResponseEntity<ResponseMessage<Book>> update(Long bookId, UpdateBookDto updateParams) {
         Book book = this.bookRepository
                 .findById(bookId)
-                .orElseThrow(() -> new NotFoundException("Book not found with the given ID!"));
+                .orElseThrow(() -> new NotFoundException("Book " + bookId + " not found"));
 
-        this.bookRepository.updateBook(book.getBookId(), updateParams);
-        this.bookMetaRepository.updateBookMeta(book.getBookId(), updateParams.getMeta_data());
+        BookMeta bookMeta = this.bookMetaRepository
+                .findMetaByBookId(bookId)
+                .orElseThrow(() -> new NotFoundException("Book meta not found for book " + bookId));
+
+        this.updateBookMapper.updateEntityFromDto(updateParams, book);
+        this.updateBookMetaMapper.updateEntityFromDto(updateParams.getMeta_data(), bookMeta);
+        this.bookRepository.save(book);
+        this.bookMetaRepository.save(bookMeta);
 
         return ResponseEntity
                 .status(200)
                 .body(new ResponseMessage<>(
                         true,
-                        "Book updated successfully"));
+                        "Book " + bookId + " updated successfully",
+                        book));
     }
 
     public ResponseEntity<ResponseMessage<ResponseBody>> delete(Long bookId) {

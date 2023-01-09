@@ -1,7 +1,7 @@
 package com.library.utils.dto.Book;
 
 
-import com.library.utils.annotations.BookType;
+import com.library.utils.annotations.ValidateBookType;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.lang.Nullable;
@@ -10,7 +10,7 @@ import javax.validation.constraints.Min;
 
 @Data
 public class BookMetaDto {
-    @BookType
+    @ValidateBookType(type = "create")
     private String bookType;
 
     @Min(0)

@@ -2,7 +2,6 @@ package com.library.repository;
 
 import com.library.entity.Book;
 import com.library.utils.dto.Book.SearchBookDto;
-import com.library.utils.dto.Book.UpdateBookDto;
 import com.library.utils.projections.BooksView;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,26 +41,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query(value = "UPDATE book SET in_stock = in_stock - 1 " +
             "WHERE book_id = :bookId", nativeQuery = true)
     void updateBookStock(@Param(value = "bookId") Long bookId);
-
-    @Modifying
-    @Query(value = """
-            UPDATE book b SET
-            source_title = coalesce(cast(cast(:#{#updateParams.sourceTitle} as text) as character varying),b.source_title),
-            source_subtitle = coalesce(cast(cast(:#{#updateParams.sourceSubtitle} as text) as character varying),b.source_subtitle),
-            bosnian_title = coalesce(cast(cast(:#{#updateParams.bosnianTitle} as text) as character varying),b.bosnian_title),
-            bosnian_subtitle = coalesce(cast(cast(:#{#updateParams.bosnianSubtitle} as text) as character varying),b.bosnian_subtitle),
-            publication_ordinal_number = coalesce(cast(cast(:#{#updateParams.publicationOrdinalNumber} as text) as integer),b.publication_ordinal_number),
-            language = coalesce(cast(cast(:#{#updateParams.language} as text) as character varying),b.language),
-            release_year = coalesce(cast(cast(:#{#updateParams.releaseYear} as text) as integer),b.release_year),
-            cip_number = coalesce(cast(cast(:#{#updateParams.cipNumber} as text) as character varying),b.cip_number),
-            isbn = coalesce(cast(cast(:#{#updateParams.isbn} as text) as character varying),b.isbn),
-            cobiss = coalesce(cast(cast(:#{#updateParams.cobiss} as text) as character varying),b.cobiss),
-            status = coalesce(cast(cast(:#{#updateParams.status} as text) as character varying),b.status),
-            in_stock = coalesce(cast(cast(:#{#updateParams.inStock} as text) as integer),b.in_stock),
-            note = coalesce(cast(cast(:#{#updateParams.note} as text) as character varying),b.note)
-            WHERE book_id = :bookId
-            """, nativeQuery = true)
-    void updateBook(@Param(value = "bookId") Long bookId, UpdateBookDto updateParams);
 
     Book findByBookId(Long bookId);
 }

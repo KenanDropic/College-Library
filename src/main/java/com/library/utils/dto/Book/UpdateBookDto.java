@@ -2,6 +2,7 @@ package com.library.utils.dto.Book;
 
 import com.library.utils.annotations.Language;
 import com.library.utils.annotations.Status;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
@@ -13,6 +14,7 @@ import javax.validation.constraints.Min;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class UpdateBookDto {
     @Nullable
     @Length(min = 5, max = 45)
