@@ -22,8 +22,7 @@ public class SearchBookDto {
     @Nullable
     @Length(min = 2, max = 5)
     private String status;
-    @Nullable
+
     private String field = "source_title";
-    @Nullable
     private String direction = "ASC";
 }

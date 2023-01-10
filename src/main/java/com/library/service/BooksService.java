@@ -7,7 +7,7 @@ import com.library.exception.exceptions.NotFoundException;
 import com.library.repository.BookMetaRepository;
 import com.library.repository.BookRepository;
 import com.library.repository.BookWriteOffRepository;
-import com.library.utils.Pagination;
+import com.library.utils.SortingPagination;
 import com.library.utils.dto.Book.CreateBookDto;
 import com.library.utils.dto.Book.SearchBookDto;
 import com.library.utils.dto.Book.UpdateBookDto;
@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -59,7 +60,9 @@ public class BooksService {
     public ResponseEntity<PaginationResponse> findAll(SearchBookDto searchParams,
                                                       Integer page, Integer pageSize) {
 
-        assert searchParams.getDirection() != null;
+        SortingPagination.containsDirection(searchParams.getDirection());
+        SortingPagination.containsField(List.of("source_title", "release_year"), searchParams.getField());
+
         Sort sort = searchParams.getDirection().equals("ASC") ?
                 Sort.by(Objects.requireNonNull(searchParams.getField()).equals("source_title") ?
                         "b.source_title" :
@@ -68,8 +71,7 @@ public class BooksService {
                         "b.source_title" :
                         "b.release_year").descending();
 
-        Pageable paging = page == 1 ? PageRequest.of(0, pageSize, sort) :
-                PageRequest.of(page - 1, pageSize);
+        Pageable paging = PageRequest.of(page - 1, pageSize, sort);
 
         Page<BooksView> books = this.bookRepository.findAllBooks(searchParams, paging);
 
@@ -80,18 +82,16 @@ public class BooksService {
                             page, books.getContent()));
         }
 
-        Pagination pagination = new Pagination();
-        pagination.doesHaveNext(books, page);
+        SortingPagination.doesHaveNext(books, page);
 
         return ResponseEntity
                 .status(200)
                 .body(new PaginationResponse(true, books.getSize(), books.getTotalElements(),
-                        books.getTotalPages(), page, pagination.getPagination(), books.getContent()));
+                        books.getTotalPages(), page, SortingPagination.getPagination(), books.getContent()));
 
     }
 
     public Book createBook(CreateBookDto bookParams) {
-
         Book book = new Book(bookParams.getSourceTitle(), bookParams.getSourceSubtitle(),
                 bookParams.getBosnianTitle(), bookParams.getBosnianSubtitle(),
                 bookParams.getPublicationOrdinalNumber(), bookParams.getAuthors(),
@@ -129,19 +129,21 @@ public class BooksService {
     public ResponseEntity<ResponseMessage<ResponseBody>> delete(Long bookId) {
         Book book = this.bookRepository
                 .findById(bookId)
-                .orElseThrow(() -> new NotFoundException("Loan not found with the given ID!"));
+                .orElseThrow(() -> new NotFoundException("Book " + bookId + " not found."));
 
         this.bookRepository.delete(book);
 
         return ResponseEntity
                 .status(200)
-                .body(new ResponseMessage<>(true, "Book deleted successfully"));
+                .body(new ResponseMessage<>(
+                        true,
+                        "Book " + bookId + " deleted successfully"));
     }
 
     public Book writeOff(Long bookId, WriteOffDto writeOff) {
         Book book = this.bookRepository
                 .findById(bookId)
-                .orElseThrow(() -> new NotFoundException("Book not found,with the given ID!"));
+                .orElseThrow(() -> new NotFoundException("Book " + bookId + " not found."));
 
         BookWriteOff bookWriteOff = new BookWriteOff(book, writeOff.getWriteOffReason(),
                 writeOff.getWriteOffYear(), writeOff.getWriteOffDocument(), writeOff.getWriteOffNote());
