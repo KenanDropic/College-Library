@@ -7,6 +7,7 @@ import com.library.utils.dto.Loan.SearchLoanDto;
 import com.library.utils.dto.Loan.UpdateLoanDto;
 import com.library.utils.payload.PaginationResponse;
 import com.library.utils.payload.ResponseMessage;
+import com.library.utils.projections.LoanView;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +24,7 @@ public class LoanController {
 
 
     @GetMapping("/{id}")
-    public Loan getLoan(@PathVariable("id") final Long loanId) {
+    public LoanView getLoan(@PathVariable("id") final Long loanId) {
         return this.loanService.findOne(loanId);
     }
 

@@ -3,6 +3,7 @@ package com.library.repository;
 import com.library.entity.Loan;
 import com.library.utils.dto.Loan.SearchLoanDto;
 import com.library.utils.dto.Loan.UpdateLoanDto;
+import com.library.utils.projections.LoanView;
 import com.library.utils.projections.LoansView;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 public interface LoanRepository extends JpaRepository<Loan, Long> {
@@ -65,5 +68,13 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
             """, nativeQuery = true)
     void updateLoan(@Param(value = "id") Long id, UpdateLoanDto updateParams);
 
-    Loan findByLoanId(Long loanId);
+    @Query(value = """
+            SELECT l.loan_id,l.borrow_date,l.due_date,l.loan_status,
+                   b.book_id,b.source_title,b.release_year,b.language,
+                   u.user_id,concat(u.first_name,' ',u.last_name) as fullname,u.email
+                   FROM loan l
+                   INNER JOIN book b on b.book_id = l.book_id
+                   INNER JOIN "user" u on u.user_id = l.user_id
+                   WHERE loan_id = :loanId""", nativeQuery = true)
+    Optional<LoanView> findLoan(@Param("loanId") Long loanId);
 }
