@@ -13,14 +13,12 @@ import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 
 @Repository
 @Transactional
 public interface UserRepository extends JpaRepository<User, Long> {
-    String userRoles = "select role1_.name as role_name from user_roles roles0_ " +
-            "inner join roles role1_ on roles0_.role_id = role1_.id where roles0_.user_id = :userId";
-
     String userLoans = """
             SELECT u.email,concat(u.first_name,' ',u.last_name) as fullname,u.phone,
                    l.borrow_date ,l.due_date,l.loan_status,
@@ -47,6 +45,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
     UserView findUser(@Param("email") String email);
 
     @Query(value = """
+            SELECT u.user_id,concat(u.first_name,' ', u.last_name) as fullname,
+                               u.email,u.email_confirmed,u.phone,u.created_at,u.updated_at,
+                               jsonb_agg(r.name) as roles
+                        FROM user_roles ur
+                                 INNER JOIN roles r on ur.role_id = r.id
+                                 INNER JOIN "user" u on u.user_id = ur.user_id
+                        WHERE u.user_id = :userId
+                        GROUP BY u.user_id
+            """, nativeQuery = true)
+    Optional<UserView> findUserByIdWithRoles(@Param("userId") Long id);
+
+    @Query(value = """
             SELECT u.user_id,u.email,u.phone,concat(u.first_name,' ',u.last_name) as fullname,
                    u.email_confirmed,u.updated_at,
                    cast(array_agg(r.name) as character varying[]) as roles
@@ -61,9 +71,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             CASE WHEN :#{#field} = 'created_at' AND :#{#direction} = 'DESC' THEN u.created_at END DESC
             """, nativeQuery = true)
     Page<UsersView> findAllUsers(String field, String direction, Pageable pageable);
-
-    @Query(value = userRoles, nativeQuery = true)
-    List<String> findUserRoles(@Param("userId") Long userId);
 
     @Query(value = userLoans, nativeQuery = true)
     List<UserLoansView> findUserLoans(@Param("userId") Long userId);

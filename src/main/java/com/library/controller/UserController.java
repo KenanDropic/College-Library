@@ -4,10 +4,10 @@ import com.library.entity.User;
 import com.library.service.RoleService;
 import com.library.service.UserService;
 import com.library.utils.dto.Auth.CreateUserDto;
-import com.library.utils.dto.User.UserDto;
 import com.library.utils.dto.User.UserRoleDto;
 import com.library.utils.payload.PaginationResponse;
 import com.library.utils.projections.UserLoansView;
+import com.library.utils.projections.UserView;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,7 +37,7 @@ public class UserController {
     }
 
     @GetMapping(path = "/{id}")
-    public UserDto getUser(@PathVariable("id") final Long userId) {
+    public UserView getUser(@PathVariable("id") final Long userId) {
         return this.userService.findOne(userId);
     }
 
