@@ -6,7 +6,7 @@ import com.library.exception.exceptions.NotFoundException;
 import com.library.repository.RoleRepository;
 import com.library.repository.UserRepository;
 import com.library.service.interfaces.IUserService;
-import com.library.utils.Pagination;
+import com.library.utils.SortingPagination;
 import com.library.utils.dto.Auth.CreateUserDto;
 import com.library.utils.dto.User.UserDto;
 import com.library.utils.payload.PaginationResponse;
@@ -59,7 +59,7 @@ public class UserService implements IUserService {
         Pageable paging = PageRequest.of(page - 1, pageSize);
         Page<UsersView> users = this.userRepository.findAllUsers(field, direction, paging);
 
-        Pagination pagination = new Pagination();
+        SortingPagination pagination = new SortingPagination();
         pagination.doesHaveNext(users, page);
 
         if (users.isEmpty()) {

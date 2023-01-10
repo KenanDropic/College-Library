@@ -5,8 +5,8 @@ import com.library.utils.dto.Auth.CreateUserDto;
 import com.library.utils.dto.Auth.LoginUserDto;
 import com.library.utils.dto.Auth.ResetPasswordDto;
 import com.library.utils.dto.Auth.ResetPasswordEmailDto;
-import com.library.utils.dto.User.UserDto;
 import com.library.utils.payload.ResponseMessage;
+import com.library.utils.projections.UserView;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,7 +37,7 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<ResponseMessage<UserDto>> getCurrentUser() {
+    public ResponseEntity<ResponseMessage<UserView>> getCurrentUser() {
         return this.authService.getLoggedUser();
     }
 

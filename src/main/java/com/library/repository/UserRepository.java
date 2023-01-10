@@ -2,6 +2,7 @@ package com.library.repository;
 
 import com.library.entity.User;
 import com.library.utils.projections.UserLoansView;
+import com.library.utils.projections.UserView;
 import com.library.utils.projections.UsersView;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +33,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
             """;
 
     User findByEmail(String email);
+
+    @Query(value = """
+            SELECT u.user_id,concat(u.first_name,' ', u.last_name) as fullname,
+                   u.email,u.email_confirmed,u.phone,u.created_at,u.updated_at,
+                   jsonb_agg(r.name) as roles
+            FROM user_roles ur
+                     INNER JOIN roles r on ur.role_id = r.id
+                     INNER JOIN "user" u on u.user_id = ur.user_id
+            WHERE u.email = :email
+            GROUP BY u.user_id
+            """, nativeQuery = true)
+    UserView findUser(@Param("email") String email);
 
     @Query(value = """
             SELECT u.user_id,u.email,u.phone,concat(u.first_name,' ',u.last_name) as fullname,

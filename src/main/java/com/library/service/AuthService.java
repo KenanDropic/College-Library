@@ -14,8 +14,8 @@ import com.library.utils.dto.Auth.CreateUserDto;
 import com.library.utils.dto.Auth.LoginUserDto;
 import com.library.utils.dto.Auth.ResetPasswordDto;
 import com.library.utils.dto.Auth.ResetPasswordEmailDto;
-import com.library.utils.dto.User.UserDto;
 import com.library.utils.payload.ResponseMessage;
+import com.library.utils.projections.UserView;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -36,7 +36,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 
@@ -70,7 +69,8 @@ public class AuthService {
     }
 
     @SneakyThrows
-    public ResponseEntity<ResponseMessage<ResponseBody>> signup(CreateUserDto params, HttpServletResponse response) {
+    public ResponseEntity<ResponseMessage<ResponseBody>> signup(CreateUserDto params,
+                                                                HttpServletResponse response) {
         if (emailExists(params.getEmail())) throw new BadRequestException("User already exists");
 
         User user = this.userService.createUser(params);
@@ -95,16 +95,20 @@ public class AuthService {
     }
 
     @SneakyThrows
-    public ResponseEntity<ResponseMessage<ResponseBody>> signin(LoginUserDto params, HttpServletResponse response) {
+    public ResponseEntity<ResponseMessage<ResponseBody>> signin(LoginUserDto params,
+                                                                HttpServletResponse response) {
         User user = this.userService.findOneByEmail(params.getEmail());
 
         if (user == null) ResponseEntity
                 .status(404)
-                .body(new ResponseMessage<>(true, "User not found!"));
+                .body(new ResponseMessage<>(
+                        true,
+                        "User " + params.getEmail() + " not found!"));
 
         //noinspection unused
         Authentication auth = usernamePwdAuthenticateProvider
-                .authenticate(new UsernamePasswordAuthentication(params.getEmail(), params.getPassword()));
+                .authenticate(new UsernamePasswordAuthentication(
+                        params.getEmail(), params.getPassword()));
 
         String accessToken = generateToken.generateAToken(user);
         String refreshToken = generateToken.generateRToken(user);
@@ -117,35 +121,28 @@ public class AuthService {
 
         return ResponseEntity
                 .status(200)
-                .body(new ResponseMessage<>(true, "You've logged in successfully", accessToken));
+                .body(new ResponseMessage<>(
+                        true,
+                        "You've logged in successfully",
+                        accessToken));
     }
 
-    public ResponseEntity<ResponseMessage<UserDto>> getLoggedUser() {
+    public ResponseEntity<ResponseMessage<UserView>> getLoggedUser() {
         Authentication auth = getAuthContext();
 
         if ((auth instanceof AnonymousAuthenticationToken)) {
             return ResponseEntity
                     .status(401)
-                    .body(new ResponseMessage<>(true, "Failed to authenticate user"));
+                    .body(new ResponseMessage<>(
+                            true,
+                            "Failed to authenticate user"));
         }
 
-        User user = this.userRepository.findByEmail(auth.getPrincipal().toString());
-        // Converting from User to UserDto is so that we can get roles in response as array of literals(string) and not array of objects.
-        // Example: for roles we will now get [ROLE_USER,...] instead of [{id: 1,name:ROLE_USER},...].
-        // It would make life easier to access and check for roles in frontend
-        List<String> userRoles = this.userService.findUserRoles(user.getId());
-        UserDto userDto = new UserDto();
-        userDto.setId(user.getId());
-        userDto.setFirst_name(user.getFirstName());
-        userDto.setLast_name(user.getLastName());
-        userDto.setEmail(user.getEmail());
-        userDto.setEmailConfirmed(user.getEmailConfirmed());
-        userDto.setRoles(userRoles);
-        userDto.setPhone(user.getPhone());
-        userDto.setCreated_at(user.getCreatedAt());
-        userDto.setUpdated_at(user.getUpdatedAt());
+        UserView user = this.userRepository.findUser(auth.getPrincipal().toString());
 
-        return ResponseEntity.status(200).body(new ResponseMessage<>(true, userDto));
+        return ResponseEntity
+                .status(200)
+                .body(new ResponseMessage<>(true, user));
     }
 
     public ResponseEntity<ResponseMessage<ResponseBody>> refresh(HttpServletRequest request,
@@ -177,7 +174,12 @@ public class AuthService {
         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
 
-        return ResponseEntity.status(200).body(new ResponseMessage<>(true, "Token is refreshed successfully", accessToken));
+        return ResponseEntity
+                .status(200)
+                .body(new ResponseMessage<>(
+                true,
+                "Token is refreshed successfully",
+                        accessToken));
     }
 
     public ResponseEntity<ResponseMessage<ResponseBody>> logoutUser(HttpServletResponse response) {
@@ -235,7 +237,9 @@ public class AuthService {
 
         return ResponseEntity
                 .status(200)
-                .body(new ResponseMessage<>(true, "Email confirmed successfully"));
+                .body(new ResponseMessage<>(
+                        true,
+                        "Email confirmed successfully"));
     }
 
     @Transactional
