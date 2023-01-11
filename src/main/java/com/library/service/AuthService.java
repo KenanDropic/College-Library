@@ -138,7 +138,9 @@ public class AuthService {
                             "Failed to authenticate user"));
         }
 
-        UserView user = this.userRepository.findUser(auth.getPrincipal().toString());
+        UserView user = this
+                .userRepository
+                .findUserByEmailWithRoles(auth.getPrincipal().toString());
 
         return ResponseEntity
                 .status(200)
@@ -177,8 +179,8 @@ public class AuthService {
         return ResponseEntity
                 .status(200)
                 .body(new ResponseMessage<>(
-                true,
-                "Token is refreshed successfully",
+                        true,
+                        "Token is refreshed successfully",
                         accessToken));
     }
 
@@ -282,7 +284,8 @@ public class AuthService {
         if (user == null) {
             return ResponseEntity
                     .status(404)
-                    .body(new ResponseMessage<>(false, "User not found"));
+                    .body(new ResponseMessage<>(
+                            false, "User " + params.getEmail() + " not found"));
         }
 
         ResetPasswordToken resetPasswordToken = resetPasswordTokenService.generateNewResetPasswordToken(user);

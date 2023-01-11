@@ -12,23 +12,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
-import java.util.List;
 import java.util.Optional;
 
 
 @Repository
 @Transactional
 public interface UserRepository extends JpaRepository<User, Long> {
-    String userLoans = """
-            SELECT u.email,concat(u.first_name,' ',u.last_name) as fullname,u.phone,
-                   l.borrow_date ,l.due_date,l.loan_status,
-                   l.return_obligation,l.returned_date,
-                   b.source_title
-            FROM "user" u
-            INNER JOIN loan l on u.user_id = l.user_id
-            INNER JOIN book b on b.book_id = l.book_id
-            WHERE u.user_id = :userId
-            """;
 
     User findByEmail(String email);
 
@@ -42,19 +31,31 @@ public interface UserRepository extends JpaRepository<User, Long> {
             WHERE u.email = :email
             GROUP BY u.user_id
             """, nativeQuery = true)
-    UserView findUser(@Param("email") String email);
+    UserView findUserByEmailWithRoles(@Param("email") String email);
 
     @Query(value = """
             SELECT u.user_id,concat(u.first_name,' ', u.last_name) as fullname,
-                               u.email,u.email_confirmed,u.phone,u.created_at,u.updated_at,
-                               jsonb_agg(r.name) as roles
-                        FROM user_roles ur
-                                 INNER JOIN roles r on ur.role_id = r.id
-                                 INNER JOIN "user" u on u.user_id = ur.user_id
-                        WHERE u.user_id = :userId
-                        GROUP BY u.user_id
+                   u.email,u.email_confirmed,u.phone,u.created_at,u.updated_at,
+                   jsonb_agg(DISTINCT r.name) as roles,
+                   jsonb_agg(json_build_object(
+                   'borrowDate',l.borrow_date,
+                   'dueDate',l.due_date,
+                   'returnDate',l.returned_date,
+                   'loanExtended',l.loan_extended,
+                   'loanStatus',l.loan_status,
+                   'sourceTitle',b.source_title,
+                   'bookLanguage',b.language,
+                   'ISBN',b.isbn,
+                   'releaseYear',b.release_year)) as loans
+            FROM user_roles ur
+                     INNER JOIN roles r on ur.role_id = r.id
+                     INNER JOIN "user" u on u.user_id = ur.user_id
+                     INNER JOIN loan l on u.user_id = l.user_id
+                     INNER JOIN book b on l.book_id = b.book_id
+            WHERE u.user_id = :userId
+            GROUP BY u.user_id
             """, nativeQuery = true)
-    Optional<UserView> findUserByIdWithRoles(@Param("userId") Long id);
+    Optional<UserLoansView> findUserByIdWithRolesAndLoans(@Param("userId") Long id);
 
     @Query(value = """
             SELECT u.user_id,u.email,u.phone,concat(u.first_name,' ',u.last_name) as fullname,
@@ -71,8 +72,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
             CASE WHEN :#{#field} = 'created_at' AND :#{#direction} = 'DESC' THEN u.created_at END DESC
             """, nativeQuery = true)
     Page<UsersView> findAllUsers(String field, String direction, Pageable pageable);
-
-    @Query(value = userLoans, nativeQuery = true)
-    List<UserLoansView> findUserLoans(@Param("userId") Long userId);
 
 }

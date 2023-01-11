@@ -9,7 +9,6 @@ import com.library.utils.SortingPagination;
 import com.library.utils.dto.Auth.CreateUserDto;
 import com.library.utils.payload.PaginationResponse;
 import com.library.utils.projections.UserLoansView;
-import com.library.utils.projections.UserView;
 import com.library.utils.projections.UsersView;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -64,22 +63,20 @@ public class UserService implements IUserService {
     public User findOneByEmail(String email) {
         if (email == null) throw new NotFoundException("Email cannot be null!");
 
-        return this.userRepository.findByEmail(email);
+        User user = this.userRepository.findByEmail(email);
+
+        if (user == null) {
+            throw new NotFoundException("User " + email + " not found");
+        }
+
+        return user;
     }
 
-    public UserView findOne(Long id) {
+    public UserLoansView findOneWithRolesAndLoans(Long id) {
         return this.userRepository
-                .findUserByIdWithRoles(id)
+                .findUserByIdWithRolesAndLoans(id)
                 .orElseThrow(() -> new NotFoundException("User " + id + " not found."));
 
-    }
-
-    public List<UserLoansView> findUserLoans(Long id) {
-        User user = this.userRepository
-                .findById(id)
-                .orElseThrow(() -> new NotFoundException("User " + id + " not found."));
-
-        return this.userRepository.findUserLoans(user.getId());
     }
 
     public User createUser(CreateUserDto params) {

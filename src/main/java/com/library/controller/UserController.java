@@ -7,12 +7,10 @@ import com.library.utils.dto.Auth.CreateUserDto;
 import com.library.utils.dto.User.UserRoleDto;
 import com.library.utils.payload.PaginationResponse;
 import com.library.utils.projections.UserLoansView;
-import com.library.utils.projections.UserView;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 
 @RestController
@@ -37,8 +35,8 @@ public class UserController {
     }
 
     @GetMapping(path = "/{id}")
-    public UserView getUser(@PathVariable("id") final Long userId) {
-        return this.userService.findOne(userId);
+    public UserLoansView getUser(@PathVariable("id") final Long userId) {
+        return this.userService.findOneWithRolesAndLoans(userId);
     }
 
     @PostMapping
@@ -50,11 +48,6 @@ public class UserController {
     public ResponseEntity<?> updateUserRoles(@PathVariable("id") Long userId,
                                              @RequestBody @Valid UserRoleDto role) {
         return this.roleService.updateUserRoles(userId, role);
-    }
-
-    @GetMapping("/{id}/loans")
-    public List<UserLoansView> getUserLoans(@PathVariable("id") Long userId){
-        return this.userService.findUserLoans(userId);
     }
 
 }
