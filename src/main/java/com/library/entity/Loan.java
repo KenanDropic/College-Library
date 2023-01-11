@@ -18,9 +18,9 @@ import static javax.persistence.GenerationType.SEQUENCE;
 @Data
 public class Loan {
 
-    public Loan(User user, Book book, boolean returnObligation,
+    public Loan(User user, Book book, Boolean returnObligation,
                 LocalDate borrowDate, LocalDate dueDate, LocalDate returnedDate,
-                boolean loanExtended, String loanStatus) {
+                Boolean loanExtended, String loanStatus) {
         this.user = user;
         this.book = book;
         this.returnObligation = returnObligation;
@@ -46,11 +46,11 @@ public class Loan {
     @JsonBackReference(value = "book-loans")
     private Book book;
 
-    private boolean returnObligation;
+    private Boolean returnObligation;
     private LocalDate borrowDate;
     private LocalDate dueDate;
     private LocalDate returnedDate;
-    private boolean loanExtended;
+    private Boolean loanExtended;
 
     @Column(columnDefinition = "character varying(1)")
     private String loanStatus;

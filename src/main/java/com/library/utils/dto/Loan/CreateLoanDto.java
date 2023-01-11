@@ -33,7 +33,7 @@ public class CreateLoanDto {
     private LocalDate returnedDate;
 
     @Nullable
-    private boolean loanExtended;
+    private Boolean loanExtended;
 
     @NotNull(message = "Field cannot be empty")
     @Status(type = "create")
