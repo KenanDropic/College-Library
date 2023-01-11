@@ -9,9 +9,11 @@ import com.library.repository.BookRepository;
 import com.library.repository.LoanRepository;
 import com.library.repository.UserRepository;
 import com.library.utils.SortingPagination;
+import com.library.utils.UpdateBodyValidation;
 import com.library.utils.dto.Loan.CreateLoanDto;
 import com.library.utils.dto.Loan.SearchLoanDto;
 import com.library.utils.dto.Loan.UpdateLoanDto;
+import com.library.utils.mapper.UpdateLoanMapper;
 import com.library.utils.payload.PaginationResponse;
 import com.library.utils.payload.ResponseMessage;
 import com.library.utils.projections.LoanView;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -35,12 +38,14 @@ public class LoanService {
     private final LoanRepository loanRepository;
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
+    private final UpdateLoanMapper updateLoanMapper;
 
     public LoanService(LoanRepository loanRepository, UserRepository userRepository,
-                       BookRepository bookRepository) {
+                       BookRepository bookRepository, UpdateLoanMapper updateLoanMapper) {
         this.loanRepository = loanRepository;
         this.userRepository = userRepository;
         this.bookRepository = bookRepository;
+        this.updateLoanMapper = updateLoanMapper;
     }
 
     public LoanView findOne(Long loanId) {
@@ -91,7 +96,7 @@ public class LoanService {
 
         Loan loan = new Loan(user, book, params.isReturnObligation(),
                 params.getBorrowDate(), params.getDueDate(), params.getReturnedDate(),
-                params.isLoanExtended(), params.getLoanStatus());
+                params.getLoanExtended(), params.getLoanStatus());
 
         // subtract stock by 1
         this.bookRepository.updateBookStock(book.getBookId());
@@ -104,29 +109,47 @@ public class LoanService {
                         this.loanRepository.save(loan)));
     }
 
-    public ResponseEntity<ResponseMessage<ResponseBody>> update(Long loanId, UpdateLoanDto updateParams) {
+    public ResponseEntity<ResponseMessage<Loan>> update(Long loanId, UpdateLoanDto updateParams) {
         Loan loan = this.loanRepository
                 .findById(loanId)
-                .orElseThrow(() -> new NotFoundException("Loan not found with the given ID!"));
+                .orElseThrow(() -> new NotFoundException("Loan " + loanId + " not found."));
 
         checkDates(updateParams.getReturnedDate(), updateParams.getDueDate(), loan.getBorrowDate());
 
-        this.loanRepository.updateLoan(loanId, updateParams);
+        List<Object> existingValues = Arrays.asList(loan.getUser().getId(),
+                loan.getDueDate(), loan.getLoanExtended(),
+                loan.getReturnedDate(), loan.getLoanStatus());
+
+        List<Object> passedValues = Arrays.asList(updateParams.getUserId(),
+                updateParams.getDueDate(), updateParams.getLoanExtended(),
+                updateParams.getReturnedDate(), updateParams.getLoanStatus());
+
+        UpdateBodyValidation<Object> check = new UpdateBodyValidation<>();
+        check.checkRequestBody(existingValues, passedValues);
+
+        this.updateLoanMapper.updateEntityFromDto(updateParams, loan);
+        this.loanRepository.save(loan);
+
         return ResponseEntity
                 .status(200)
                 .body(new ResponseMessage<>(
                         true,
-                        "Loan updated successfully"));
+                        "Loan " + loanId + " updated successfully",
+                        loan));
     }
 
     public ResponseEntity<ResponseMessage<ResponseBody>> delete(Long loanId) {
         Loan loan = this.loanRepository
                 .findById(loanId)
-                .orElseThrow(() -> new NotFoundException("Loan not found with the given ID!"));
+                .orElseThrow(() -> new NotFoundException("Loan " + loanId + " not found."));
 
         this.loanRepository.delete(loan);
 
-        return ResponseEntity.status(200).body(new ResponseMessage<>(true, "Loan deleted successfully"));
+        return ResponseEntity
+                .status(200)
+                .body(new ResponseMessage<>(
+                        true,
+                        "Loan " + loanId + " deleted successfully"));
     }
 
     /* ------------------------------------------- NON-API ------------------------------------------ */

@@ -2,13 +2,11 @@ package com.library.repository;
 
 import com.library.entity.Loan;
 import com.library.utils.dto.Loan.SearchLoanDto;
-import com.library.utils.dto.Loan.UpdateLoanDto;
 import com.library.utils.projections.LoanView;
 import com.library.utils.projections.LoansView;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -39,34 +37,6 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
                     (:#{#searchParams.status} is null OR cast(:#{#searchParams.status} as character varying) = l.loan_status)
                     """, nativeQuery = true)
     Page<LoansView> findAllLoans(SearchLoanDto searchParams, Pageable pageable);
-
-    /*
-    ORDER BY
-                    CASE WHEN cast(:#{#searchParams.field} as character varying) = 'source_title' AND
-                    cast(:#{#searchParams.direction} as character varying) = 'ASC' THEN b.source_title END,
-                    CASE WHEN cast(:#{#searchParams.field} as character varying) = 'source_title' AND
-                    cast(:#{#searchParams.direction} as character varying) = 'DESC' THEN b.source_title END DESC,
-                    CASE WHEN cast(:#{#searchParams.field} as character varying) = 'borrow_date' AND
-                    cast(:#{#searchParams.direction} as character varying) = 'ASC' THEN l.borrow_date END,
-                    CASE WHEN cast(:#{#searchParams.field} as character varying) = 'borrow_date' AND
-                    cast(:#{#searchParams.direction} as character varying) = 'DESC' THEN l.borrow_date END DESC,
-                    CASE WHEN cast(:#{#searchParams.field} as character varying) = 'created_at' AND
-                    cast(:#{#searchParams.direction} as character varying) = 'ASC' THEN l.created_at END,
-                    CASE WHEN cast(:#{#searchParams.field} as character varying) = 'created_at' AND
-                    cast(:#{#searchParams.direction} as character varying) = 'DESC' THEN l.created_at END DESC
-     */
-
-    @Modifying
-    @Query(value = """
-            UPDATE loan l SET
-            user_id = coalesce(cast(cast(:#{#updateParams.userId} as text) as bigint),l.user_id),
-            due_date = coalesce(cast(cast(:#{#updateParams.dueDate} as text) as date),l.due_date),
-            returned_date = coalesce(cast(cast(:#{#updateParams.returnedDate} as text) as date),l.returned_date),
-            loan_extended = coalesce(cast(cast(:#{#updateParams.loanExtended} as text) as boolean),l.loan_extended),
-            loan_status = coalesce(cast(cast(:#{#updateParams.loanStatus} as text) as character varying),l.loan_status)
-            WHERE loan_id = :id
-            """, nativeQuery = true)
-    void updateLoan(@Param(value = "id") Long id, UpdateLoanDto updateParams);
 
     @Query(value = """
             SELECT l.loan_id,l.borrow_date,l.due_date,l.loan_status,

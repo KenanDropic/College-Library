@@ -43,7 +43,7 @@ public class LoanController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseMessage<ResponseBody>>
+    public ResponseEntity<ResponseMessage<Loan>>
     updateLoan(@PathVariable("id") final Long loanId,
                @RequestBody @Valid UpdateLoanDto updateParams) {
         return this.loanService.update(loanId, updateParams);
