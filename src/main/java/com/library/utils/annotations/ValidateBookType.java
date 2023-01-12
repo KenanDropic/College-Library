@@ -16,7 +16,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Documented
 @Constraint(validatedBy = BookTypeValidator.class )
-public @interface BookType {
+public @interface ValidateBookType {
+    String type();
+
     String message() default "Please provide one of the following values: " +
             "book,script,collection,graduation thesis,magazines,article," +
             "master thesis,doctoral thesis";
