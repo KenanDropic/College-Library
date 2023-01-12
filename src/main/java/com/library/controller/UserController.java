@@ -31,12 +31,12 @@ public class UserController {
                                                        @RequestParam(required = false, defaultValue = "5") Integer pageSize,
                                                        @RequestParam(required = false, defaultValue = "first_name") String field,
                                                        @RequestParam(required = false, defaultValue = "ASC") String direction) {
-        return this.userService.findAllWithPaginationAndSorting(page, pageSize, field, direction);
+        return this.userService.findAllUsersWithPaginationAndSorting(page, pageSize, field, direction);
     }
 
     @GetMapping(path = "/{id}")
     public UserLoansView getUser(@PathVariable("id") final Long userId) {
-        return this.userService.findOneWithRolesAndLoans(userId);
+        return this.userService.findUserWithRolesAndLoans(userId);
     }
 
     @PostMapping

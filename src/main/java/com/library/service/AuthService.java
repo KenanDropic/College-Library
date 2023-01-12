@@ -97,7 +97,7 @@ public class AuthService {
     @SneakyThrows
     public ResponseEntity<ResponseMessage<ResponseBody>> signin(LoginUserDto params,
                                                                 HttpServletResponse response) {
-        User user = this.userService.findOneByEmail(params.getEmail());
+        User user = this.userService.findUserByEmail(params.getEmail());
 
         if (user == null) ResponseEntity
                 .status(404)
@@ -118,6 +118,8 @@ public class AuthService {
         assert user != null;
         this.hashRT(user.getId(), refreshToken);
         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        System.out.println("This is our cookie: " + cookie);
 
         return ResponseEntity
                 .status(200)
@@ -156,7 +158,9 @@ public class AuthService {
         if ((auth instanceof AnonymousAuthenticationToken)) {
             return ResponseEntity
                     .status(401)
-                    .body(new ResponseMessage<>(true, "Authentication failed!"));
+                    .body(new ResponseMessage<>(
+                            true,
+                            "Authentication failed!"));
         }
 
         User user = this.userRepository.findByEmail(auth.getPrincipal().toString());
@@ -166,7 +170,9 @@ public class AuthService {
 
         if (!hashRTMatches) return ResponseEntity
                 .status(401)
-                .body(new ResponseMessage<>(true, "Authentication failed!"));
+                .body(new ResponseMessage<>(
+                        true,
+                        "Authentication failed!"));
 
         String accessToken = generateToken.generateAToken(user);
         String refreshToken = generateToken.generateRToken(user);
@@ -174,7 +180,6 @@ public class AuthService {
         ResponseCookie cookie = CustomCookie.AssignCookie("jwt-rt", refreshToken);
         this.hashRT(user.getId(), refreshToken);
         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
 
         return ResponseEntity
                 .status(200)
@@ -190,14 +195,20 @@ public class AuthService {
         if ((auth instanceof AnonymousAuthenticationToken))
             return ResponseEntity
                     .status(401)
-                    .body(new ResponseMessage<>(true, "Authentication failed!"));
+                    .body(new ResponseMessage<>(
+                            true,
+                            "Authentication failed!"));
 
-        User user = this.userRepository.findByEmail(auth.getPrincipal().toString());
+        User user = this
+                .userRepository
+                .findByEmail(auth.getPrincipal().toString());
 
         if (user.getHashedRt().equals("") || user.getHashedRt() == null) {
             return ResponseEntity
                     .status(401)
-                    .body(new ResponseMessage<>(true, "Hash is already empty"));
+                    .body(new ResponseMessage<>(
+                            true,
+                            "Hash is already empty"));
         }
 
         ClearAuth(response);
@@ -206,7 +217,9 @@ public class AuthService {
 
         return ResponseEntity
                 .status(200)
-                .body(new ResponseMessage<>(true, "Logout is successful"));
+                .body(new ResponseMessage<>(
+                        true,
+                        "Logout is successful"));
     }
 
     @Transactional
@@ -216,20 +229,26 @@ public class AuthService {
         if (verificationToken == null) {
             return ResponseEntity
                     .status(500)
-                    .body(new ResponseMessage<>(false, "Invalid token"));
+                    .body(new ResponseMessage<>(
+                            false,
+                            "Invalid token"));
         }
 
         if (verificationToken.getExpiresAt().isBefore(LocalDateTime.now())) {
             return ResponseEntity
                     .status(500)
-                    .body(new ResponseMessage<>(false, "Token expired"));
+                    .body(new ResponseMessage<>(
+                            false,
+                            "Token expired"));
         }
 
         User user = verificationToken.getUser();
         if (user.getEmailConfirmed()) {
             return ResponseEntity
                     .status(400)
-                    .body(new ResponseMessage<>(false, "Email is already confirmed"));
+                    .body(new ResponseMessage<>(
+                            false,
+                            "Email is already confirmed"));
         }
         user.setEmailConfirmed(true);
         userRepository.save(user);
@@ -252,7 +271,9 @@ public class AuthService {
         if (user.getEmailConfirmed()) {
             return ResponseEntity
                     .status(400)
-                    .body(new ResponseMessage<>(false, "Email is already confirmed"));
+                    .body(new ResponseMessage<>(
+                            false,
+                            "Email is already confirmed"));
         }
 
         if (vTokenService.getVerificationTokenByUser(user) == null) {
@@ -265,16 +286,14 @@ public class AuthService {
                     .body(new ResponseMessage<>(true, "Email sent successfully!"));
         }
 
-        String existingToken = vTokenService.getVerificationTokenByUser(user).getConfirmEmailToken();
-        System.out.println("Existing token: " + existingToken);
-
-
         VerificationToken newToken = vTokenService.generateNewVerificationToken(user);
         constructLinkAndSendEmail(newToken.getConfirmEmailToken(), newToken.getUser());
 
         return ResponseEntity
                 .status(200)
-                .body(new ResponseMessage<>(true, "Email sent successfully!"));
+                .body(new ResponseMessage<>(
+                        true,
+                        "Email sent successfully!"));
     }
 
     @Transactional
@@ -285,14 +304,17 @@ public class AuthService {
             return ResponseEntity
                     .status(404)
                     .body(new ResponseMessage<>(
-                            false, "User " + params.getEmail() + " not found"));
+                            false,
+                            "User " + params.getEmail() + " not found"));
         }
 
         ResetPasswordToken resetPasswordToken = resetPasswordTokenService.generateNewResetPasswordToken(user);
         constructResetPwdLinkAndSendEmail(resetPasswordToken.getResetPasswordToken(), user);
         return ResponseEntity
                 .status(200)
-                .body(new ResponseMessage<>(true, "Email sent successfully"));
+                .body(new ResponseMessage<>(
+                        true,
+                        "Email sent successfully"));
     }
 
     public ResponseEntity<ResponseMessage<ResponseBody>> changePassword(ResetPasswordDto params) {
@@ -312,20 +334,26 @@ public class AuthService {
         if (user == null) {
             return ResponseEntity
                     .status(404)
-                    .body(new ResponseMessage<>(true, "User not found"));
+                    .body(new ResponseMessage<>(
+                            true,
+                            "User not found"));
         }
 
         // comparing old user password with what he typed in field for old user password
         if (!resetPasswordTokenService.comparePasswords(user.getPassword(), params.getOldPassword())) {
             return ResponseEntity
                     .status(400)
-                    .body(new ResponseMessage<>(true, "Please insert correct old password"));
+                    .body(new ResponseMessage<>(
+                            true,
+                            "Please insert correct old password"));
         }
 
         this.userService.changeUserPassword(user, params.getNewPassword());
         return ResponseEntity
                 .status(200)
-                .body(new ResponseMessage<>(true, "Password changed successfully"));
+                .body(new ResponseMessage<>(
+                        true,
+                        "Password changed successfully"));
     }
 
     /*------------------------------- NON-API -----------------------------------*/

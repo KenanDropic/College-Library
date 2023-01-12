@@ -48,13 +48,13 @@ public class LoanService {
         this.updateLoanMapper = updateLoanMapper;
     }
 
-    public LoanView findOne(Long loanId) {
+    public LoanView findOneLoan(Long loanId) {
         return this.loanRepository
                 .findLoan(loanId)
                 .orElseThrow(() -> new NotFoundException("Loan " + loanId + " not found."));
     }
 
-    public ResponseEntity<PaginationResponse> findAll(SearchLoanDto searchParams,
+    public ResponseEntity<PaginationResponse> findAllLoans(SearchLoanDto searchParams,
                                                       Integer page, Integer pageSize) {
 
         SortingPagination.containsDirection(searchParams.getDirection());
@@ -75,7 +75,7 @@ public class LoanService {
                         loans.getTotalPages(), page, SortingPagination.getPagination(), loans.getContent()));
     }
 
-    public ResponseEntity<ResponseMessage<Loan>> create(CreateLoanDto params) {
+    public ResponseEntity<ResponseMessage<Loan>> createLoan(CreateLoanDto params) {
         User user = this.userRepository
                 .findById(params.getUser_id())
                 .orElseThrow(() -> new NotFoundException("User " + params.getUser_id() + " not found."));
@@ -113,7 +113,7 @@ public class LoanService {
                         this.loanRepository.save(loan)));
     }
 
-    public ResponseEntity<ResponseMessage<Loan>> update(Long loanId, UpdateLoanDto updateParams) {
+    public ResponseEntity<ResponseMessage<Loan>> updateLoan(Long loanId, UpdateLoanDto updateParams) {
         Loan loan = this.loanRepository
                 .findById(loanId)
                 .orElseThrow(() -> new NotFoundException("Loan " + loanId + " not found."));
@@ -142,7 +142,7 @@ public class LoanService {
                         loan));
     }
 
-    public ResponseEntity<ResponseMessage<ResponseBody>> delete(Long loanId) {
+    public ResponseEntity<ResponseMessage<ResponseBody>> deleteLoan(Long loanId) {
         Loan loan = this.loanRepository
                 .findById(loanId)
                 .orElseThrow(() -> new NotFoundException("Loan " + loanId + " not found."));

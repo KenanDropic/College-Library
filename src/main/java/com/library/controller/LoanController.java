@@ -25,7 +25,7 @@ public class LoanController {
 
     @GetMapping("/{id}")
     public LoanView getLoan(@PathVariable("id") final Long loanId) {
-        return this.loanService.findOne(loanId);
+        return this.loanService.findOneLoan(loanId);
     }
 
     @GetMapping
@@ -34,24 +34,24 @@ public class LoanController {
             @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "5") Integer pageSize
     ) {
-        return this.loanService.findAll(searchParams, page, pageSize);
+        return this.loanService.findAllLoans(searchParams, page, pageSize);
     }
 
     @PostMapping
     public ResponseEntity<ResponseMessage<Loan>> createLoan(@RequestBody @Valid CreateLoanDto params) {
-        return this.loanService.create(params);
+        return this.loanService.createLoan(params);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ResponseMessage<Loan>>
     updateLoan(@PathVariable("id") final Long loanId,
                @RequestBody @Valid UpdateLoanDto updateParams) {
-        return this.loanService.update(loanId, updateParams);
+        return this.loanService.updateLoan(loanId, updateParams);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ResponseMessage<ResponseBody>>
     deleteLoan(@PathVariable("id") final Long loanId) {
-        return this.loanService.delete(loanId);
+        return this.loanService.deleteLoan(loanId);
     }
 }

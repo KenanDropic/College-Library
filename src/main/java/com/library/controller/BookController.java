@@ -26,7 +26,7 @@ public class BookController {
 
     @GetMapping("/{id}")
     public Book getBook(@PathVariable("id") final Long bookId) {
-        return this.booksService.findOne(bookId);
+        return this.booksService.findOneBook(bookId);
     }
 
     @GetMapping
@@ -35,7 +35,7 @@ public class BookController {
             @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "5") Integer pageSize
     ) {
-        return this.booksService.findAll(searchParams, page, pageSize);
+        return this.booksService.findAllBooks(searchParams, page, pageSize);
     }
 
 
@@ -47,18 +47,18 @@ public class BookController {
     @PutMapping("/{id}")
     public ResponseEntity<ResponseMessage<Book>> updateBook(@PathVariable("id") final Long bookId,
                                                             @RequestBody @Valid UpdateBookDto updateParams) {
-        return this.booksService.update(bookId, updateParams);
+        return this.booksService.updateBook(bookId, updateParams);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ResponseMessage<ResponseBody>> deleteBook(@PathVariable("id") final Long bookId) {
-        return this.booksService.delete(bookId);
+        return this.booksService.deleteBook(bookId);
     }
 
     @PostMapping("/writeOff/{id}")
     public ResponseEntity<ResponseMessage<BookWriteOff>> writeOffBook(@RequestBody @Valid WriteOffDto writeOff,
                                                                       @PathVariable("id") final Long bookId) {
-        return this.booksService.writeOff(bookId, writeOff);
+        return this.booksService.writeOffBook(bookId, writeOff);
     }
 
 }

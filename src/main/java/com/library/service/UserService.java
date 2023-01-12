@@ -39,7 +39,7 @@ public class UserService implements IUserService {
         this.resetPasswordTokenService = resetPasswordTokenService;
     }
 
-    public ResponseEntity<PaginationResponse> findAllWithPaginationAndSorting(int page, int pageSize,
+    public ResponseEntity<PaginationResponse> findAllUsersWithPaginationAndSorting(int page, int pageSize,
                                                                               String field, String direction) {
         SortingPagination.containsDirection(direction);
         SortingPagination.containsField(List.of("first_name", "created_at"), field);
@@ -60,7 +60,7 @@ public class UserService implements IUserService {
                         users.getContent()));
     }
 
-    public User findOneByEmail(String email) {
+    public User findUserByEmail(String email) {
         if (email == null) throw new NotFoundException("Email cannot be null!");
 
         User user = this.userRepository.findByEmail(email);
@@ -72,7 +72,7 @@ public class UserService implements IUserService {
         return user;
     }
 
-    public UserLoansView findOneWithRolesAndLoans(Long id) {
+    public UserLoansView findUserWithRolesAndLoans(Long id) {
         return this.userRepository
                 .findUserByIdWithRolesAndLoans(id)
                 .orElseThrow(() -> new NotFoundException("User " + id + " not found."));

@@ -54,11 +54,11 @@ public class BooksService {
     }
 
 
-    public Book findOne(Long bookId) {
+    public Book findOneBook(Long bookId) {
         return this.bookRepository.findByBookId(bookId);
     }
 
-    public ResponseEntity<PaginationResponse> findAll(SearchBookDto searchParams,
+    public ResponseEntity<PaginationResponse> findAllBooks(SearchBookDto searchParams,
                                                       Integer page, Integer pageSize) {
 
         SortingPagination.containsDirection(searchParams.getDirection());
@@ -102,7 +102,7 @@ public class BooksService {
         return this.bookRepository.save(book);
     }
 
-    public ResponseEntity<ResponseMessage<Book>> update(Long bookId, UpdateBookDto updateParams) {
+    public ResponseEntity<ResponseMessage<Book>> updateBook(Long bookId, UpdateBookDto updateParams) {
         Book book = this.bookRepository
                 .findById(bookId)
                 .orElseThrow(() -> new NotFoundException("Book " + bookId + " not found"));
@@ -124,7 +124,7 @@ public class BooksService {
                         book));
     }
 
-    public ResponseEntity<ResponseMessage<ResponseBody>> delete(Long bookId) {
+    public ResponseEntity<ResponseMessage<ResponseBody>> deleteBook(Long bookId) {
         Book book = this.bookRepository
                 .findById(bookId)
                 .orElseThrow(() -> new NotFoundException("Book " + bookId + " not found."));
@@ -138,7 +138,7 @@ public class BooksService {
                         "Book " + bookId + " deleted successfully"));
     }
 
-    public ResponseEntity<ResponseMessage<BookWriteOff>> writeOff(Long bookId, WriteOffDto writeOff) {
+    public ResponseEntity<ResponseMessage<BookWriteOff>> writeOffBook(Long bookId, WriteOffDto writeOff) {
         Book book = this.bookRepository
                 .findById(bookId)
                 .orElseThrow(() -> new NotFoundException("Book " + bookId + " not found."));
