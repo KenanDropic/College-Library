@@ -59,7 +59,7 @@ public class WebSecurityConfig {
                         .antMatchers(POST, "/api/v1/books").hasAnyRole("LIBRARIAN", "ADMIN")
                         .antMatchers(PUT, "/api/v1/books/{id}").hasAnyRole("LIBRARIAN", "ADMIN")
                         .antMatchers(DELETE, "/api/v1/books/{id}").hasRole("ADMIN")
-                        .antMatchers(PUT, "/api/v1/books/writeOff/{id}").hasRole("ADMIN")
+                        .antMatchers(POST, "/api/v1/books/writeOff/{id}").hasRole("ADMIN")
                         .antMatchers(POST, "/api/v1/loans").hasAnyRole("LIBRARIAN", "ADMIN")
                         .antMatchers(PUT, "/api/v1/loans/{id}").hasAnyRole("LIBRARIAN", "ADMIN")
                         .antMatchers(DELETE, "/api/v1/loans/{id}").hasRole("ADMIN")
