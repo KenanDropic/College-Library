@@ -85,11 +85,15 @@ public class LoanService {
                 .orElseThrow(() -> new NotFoundException("Book with " + params.getBook_id() + " not found."));
 
         if (book.getInStock() < 1) {
-            return ResponseEntity
-                    .status(400)
-                    .body(new ResponseMessage<>(
-                            false,
-                            "Book " + book.getSourceTitle() + " is out of stock,we cannot loan it."));
+            throw new BadRequestException("Book " +
+                    book.getSourceTitle() +
+                    " is out of stock,we cannot loan it.");
+        }
+
+        if (book.getStatus().equals("IN")) {
+            throw new BadRequestException("Book " +
+                    book.getSourceSubtitle() +
+                    " is not active,so it cannot be loaned");
         }
 
         checkDates(params.getReturnedDate(), params.getDueDate(), params.getBorrowDate());
