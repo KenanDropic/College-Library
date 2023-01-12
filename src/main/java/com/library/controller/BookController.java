@@ -1,6 +1,7 @@
 package com.library.controller;
 
 import com.library.entity.Book;
+import com.library.entity.BookWriteOff;
 import com.library.service.BooksService;
 import com.library.utils.dto.Book.CreateBookDto;
 import com.library.utils.dto.Book.SearchBookDto;
@@ -54,9 +55,9 @@ public class BookController {
         return this.booksService.delete(bookId);
     }
 
-    @PutMapping("/writeOff/{id}")
-    public Book writeOffBook(@RequestBody @Valid WriteOffDto writeOff,
-                             @PathVariable("id") final Long bookId) {
+    @PostMapping("/writeOff/{id}")
+    public ResponseEntity<ResponseMessage<BookWriteOff>> writeOffBook(@RequestBody @Valid WriteOffDto writeOff,
+                                                                      @PathVariable("id") final Long bookId) {
         return this.booksService.writeOff(bookId, writeOff);
     }
 

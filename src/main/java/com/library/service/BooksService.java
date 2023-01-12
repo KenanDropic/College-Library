@@ -3,6 +3,7 @@ package com.library.service;
 import com.library.entity.Book;
 import com.library.entity.BookMeta;
 import com.library.entity.BookWriteOff;
+import com.library.exception.exceptions.BadRequestException;
 import com.library.exception.exceptions.NotFoundException;
 import com.library.repository.BookMetaRepository;
 import com.library.repository.BookRepository;
@@ -76,10 +77,7 @@ public class BooksService {
         Page<BooksView> books = this.bookRepository.findAllBooks(searchParams, paging);
 
         if (books.isEmpty()) {
-            return ResponseEntity
-                    .status(404)
-                    .body(new PaginationResponse(true, 0, books.getTotalPages(),
-                            page, books.getContent()));
+            throw new BadRequestException("Books are not found.");
         }
 
         SortingPagination.doesHaveNext(books, page);
@@ -140,18 +138,30 @@ public class BooksService {
                         "Book " + bookId + " deleted successfully"));
     }
 
-    public Book writeOff(Long bookId, WriteOffDto writeOff) {
+    public ResponseEntity<ResponseMessage<BookWriteOff>> writeOff(Long bookId, WriteOffDto writeOff) {
         Book book = this.bookRepository
                 .findById(bookId)
                 .orElseThrow(() -> new NotFoundException("Book " + bookId + " not found."));
 
+        if (book.getStatus().equals("IN")) {
+            throw new BadRequestException("Book " + book.getSourceTitle() + " is already written of.");
+        }
+
         BookWriteOff bookWriteOff = new BookWriteOff(book, writeOff.getWriteOffReason(),
-                writeOff.getWriteOffYear(), writeOff.getWriteOffDocument(), writeOff.getWriteOffNote());
+                writeOff.getWriteOffDate(), writeOff.getWriteOffDocument(), writeOff.getWriteOffNote());
 
         book.setStatus("IN");
 
+        this.bookRepository.save(book);
         this.bookWriteOffRepository.save(bookWriteOff);
-        return this.bookRepository.save(book);
+
+        return ResponseEntity
+                .status(200)
+                .body(new ResponseMessage<>(
+                        true,
+                        "Book " + book.getSourceTitle() + " written off successfully",
+                        bookWriteOff));
+
     }
 
 }

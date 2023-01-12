@@ -131,6 +131,7 @@ public class Book {
     @JsonManagedReference(value = "book-loans")
     List<Loan> loans;
 
+    @JsonManagedReference
     @OneToOne(mappedBy = "book", cascade = {MERGE, PERSIST, REFRESH, DETACH})
     private BookWriteOff bookWriteOff;
 
@@ -142,11 +143,6 @@ public class Book {
     @PrePersist
     protected void prePersist() {
         if (this.createdAt == null) this.createdAt = new Date();
-        if (this.inStock != null && this.inStock > 0) {
-            this.setStatus("AC");
-        } else {
-            this.setStatus("IN");
-        }
     }
 
 
