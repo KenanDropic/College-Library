@@ -16,6 +16,11 @@ import static javax.persistence.GenerationType.SEQUENCE;
 @AllArgsConstructor
 @Data
 public class Publisher {
+
+    public Publisher(String publisherName) {
+        this.publisherName = publisherName;
+    }
+
     @Id
     @SequenceGenerator(name = "publisher_id", sequenceName = "publisher_id", allocationSize = 1, initialValue = 4)
     @GeneratedValue(generator = "publisher_id", strategy = SEQUENCE)
