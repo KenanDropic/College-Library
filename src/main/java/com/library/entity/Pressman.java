@@ -16,6 +16,11 @@ import static javax.persistence.GenerationType.SEQUENCE;
 @AllArgsConstructor
 @Data
 public class Pressman {
+
+    public Pressman(String pressmanName) {
+        this.pressmanName = pressmanName;
+    }
+
     @Id
     @SequenceGenerator(name = "pressman_id", sequenceName = "pressman_id", allocationSize = 1, initialValue = 2)
     @GeneratedValue(generator = "pressman_id", strategy = SEQUENCE)
