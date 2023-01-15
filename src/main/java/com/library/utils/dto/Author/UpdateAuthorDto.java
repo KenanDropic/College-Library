@@ -1,4 +1,4 @@
-package com.library.utils.dto.Book;
+package com.library.utils.dto.Author;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
