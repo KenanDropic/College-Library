@@ -27,9 +27,9 @@ public interface PressmanRepository extends JpaRepository<Pressman, Long> {
     @Query(value = """
             SELECT * FROM pressman p
             WHERE :#{#dto.pressmanName} is null or
-            p.pressman_name = cast(:#{#dto.pressmanName} as character varying)
+            p.pressman_name LIKE cast(:#{#dto.pressmanName} as character varying)
             """, nativeQuery = true)
-    Page<Pressman> findAllPressmans(SearchPressmanDto dto, Pageable pageable);
+    Page<Pressman> findPressmans(SearchPressmanDto dto, Pageable pageable);
 
     @Query(value = """
             SELECT * FROM pressman p WHERE

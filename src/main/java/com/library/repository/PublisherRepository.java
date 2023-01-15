@@ -26,9 +26,9 @@ public interface PublisherRepository extends JpaRepository<Publisher, Long> {
     @Query(value = """
             SELECT * FROM publisher p
             WHERE :#{#dto.publisherName} is null or
-            p.publisher_name = cast(:#{#dto.publisherName} as character varying)
+            p.publisher_name LIKE cast(:#{#dto.publisherName} as character varying)
             """, nativeQuery = true)
-    Page<Publisher> findAllPublishers(SearchPublisherDto dto, Pageable pageable);
+    Page<Publisher> findPublishers(SearchPublisherDto dto, Pageable pageable);
 
     @Query(value = """
             SELECT * FROM publisher p WHERE

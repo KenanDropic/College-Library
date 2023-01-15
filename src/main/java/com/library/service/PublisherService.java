@@ -46,7 +46,7 @@ public class PublisherService {
 
         Pageable paging = PageRequest.of(page - 1, pageSize, sort);
 
-        Page<Publisher> publishers = this.publisherRepository.findAllPublishers(params, paging);
+        Page<Publisher> publishers = this.publisherRepository.findPublishers(params, paging);
 
         if (publishers.isEmpty()) {
             throw new BadRequestException("Publishers are not found.");

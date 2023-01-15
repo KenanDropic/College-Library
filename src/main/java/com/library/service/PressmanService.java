@@ -35,7 +35,7 @@ public class PressmanService {
             SearchPressmanDto params, Integer page, Integer pageSize) {
 
         SortingPagination.containsDirection(params.getDirection());
-        SortingPagination.containsField(List.of("pressman_id", "pressman_mame"), params.getField());
+        SortingPagination.containsField(List.of("pressman_id", "pressman_name"), params.getField());
 
         Sort sort = params.getDirection().equals("ASC") ?
                 Sort.by(Objects.requireNonNull(params.getField()).equals("pressman_id") ?
@@ -47,7 +47,7 @@ public class PressmanService {
 
         Pageable paging = PageRequest.of(page - 1, pageSize, sort);
 
-        Page<Pressman> pressmans = this.pressmanRepository.findAllPressmans(params, paging);
+        Page<Pressman> pressmans = this.pressmanRepository.findPressmans(params, paging);
 
         if (pressmans.isEmpty()) {
             throw new BadRequestException("Pressman's are not found.");
@@ -77,7 +77,9 @@ public class PressmanService {
 
         // if not null,record of Pressman is returned,so it means it exists.
         if (doesPressmanExists != null) {
-            throw new BadRequestException("Pressman already exists!");
+            throw new BadRequestException("Pressman " +
+                    params.getPressmanName() +
+                    " already exists!");
         }
 
         Pressman pressman = new Pressman(params.getPressmanName());
