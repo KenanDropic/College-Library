@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
+import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -90,19 +91,35 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    // validation handler
+
+    // argument not valid handler
     @Override
     protected @NotNull ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
                                                                            @Nullable HttpHeaders headers,
                                                                            @Nullable HttpStatus status,
                                                                            @Nullable WebRequest request) {
+        return new ResponseEntity<>(formatErrorResponse(ex), BAD_REQUEST);
+    }
+    // binding exception handler
+    @Override
+    protected @NotNull ResponseEntity<Object> handleBindException(@NotNull BindException ex,
+                                                                  @NotNull HttpHeaders headers,
+                                                                  @NotNull HttpStatus status,
+                                                                  @NotNull WebRequest request) {
+        System.out.println("Errors: " + ex.getBindingResult());
+
+        return new ResponseEntity<>(formatErrorResponse(ex), BAD_REQUEST);
+    }
+
+    private Map<String, String> formatErrorResponse(BindException res) {
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
+        res.getBindingResult().getAllErrors().forEach((error) -> {
 
             String fieldName = ((FieldError) error).getField();
             String message = error.getDefaultMessage();
             errors.put(fieldName, message);
         });
-        return new ResponseEntity<>(errors, BAD_REQUEST);
+
+        return errors;
     }
 }
