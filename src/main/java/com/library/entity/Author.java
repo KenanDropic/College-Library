@@ -17,6 +17,11 @@ import static javax.persistence.GenerationType.SEQUENCE;
 @Data
 @Table(name = "author")
 public class Author {
+    public Author(String authorFirstName, String authorLastName) {
+        this.authorFirstName = authorFirstName;
+        this.authorLastName = authorLastName;
+    }
+
     @JsonIgnore
     @Id
     @SequenceGenerator(name = "author_id", sequenceName = "author_id", allocationSize = 1,initialValue = 4)
